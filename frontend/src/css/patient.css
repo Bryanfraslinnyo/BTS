@@ -1,0 +1,187 @@
+/* Styles pour le champ Médecin référent - comme dans l'image */
+.medecin-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.medecin-search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.medecin-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #9e9e9e;
+  font-size: 16px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.medecin-search-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px !important;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.medecin-search-input:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.medecin-search-input::placeholder {
+  color: #9e9e9e;
+  font-size: 14px;
+}
+
+/* Dropdown des médecins */
+.medecin-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.medecin-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.15s;
+}
+
+.medecin-dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.medecin-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+/* Avatar du médecin dans le dropdown */
+.medecin-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Informations du médecin */
+.medecin-info {
+  flex: 1;
+}
+
+.medecin-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.medecin-specialite {
+  background-color: #e3f2fd;
+  color: #1565C0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.medecin-details {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #7f8c8d;
+}
+
+.medecin-details span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Badge inactif */
+.medecin-badge-inactif {
+  background-color: #f44336;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+/* Aperçu du médecin sélectionné */
+.medecin-selected-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+.medecin-selected-preview .medecin-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+
+.medecin-selected-info {
+  flex: 1;
+}
+
+.medecin-selected-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #2c3e50;
+  margin-bottom: 2px;
+}
+
+.medecin-selected-sub {
+  font-size: 11px;
+  color: #7f8c8d;
+}
+
+/* Animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.medecin-dropdown {
+  animation: dropdownFade 0.2s ease;
+}

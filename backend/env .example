@@ -1,0 +1,11 @@
+FLASK_APP=run.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+
+# MySQL — format : mysql+pymysql://user:pass@host:port/db?charset=utf8mb4
+DATABASE_URL=mysql+pymysql://iug_user:iug_pass@localhost:3306/iug_health_db?charset=utf8mb4
+
+SECRET_KEY=change-this-in-production
+
+# CORS – origine du frontend
+FRONTEND_URL=http://localhost:5173

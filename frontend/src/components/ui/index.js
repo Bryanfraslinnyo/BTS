@@ -1,0 +1,11 @@
+// ── UI Component Barrel Export ──
+export { default as Avatar }       from './Avatar.jsx'
+export { default as Badge }        from './Badge.jsx'
+export { default as Button }       from './Button.jsx'
+export { default as Card }         from './Card.jsx'
+export { default as Modal }        from './Modal.jsx'
+export { default as ConfirmModal } from './ConfirmModal.jsx'
+export { default as EmptyState }   from './EmptyState.jsx'
+export { default as StatCard }     from './StatCard.jsx'
+export { default as Tabs }         from './Tabs.jsx'
+export { default as ChartTooltip } from './ChartTooltip.jsx'
