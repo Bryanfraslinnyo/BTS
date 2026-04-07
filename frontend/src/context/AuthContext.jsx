@@ -63,38 +63,27 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]   = useState(null)
 
-  /**
-   * login(username, password)
-   * → En production, remplace le bloc DEMO_USERS par :
-   *   const res = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({username, password}) })
-   *   const data = await res.json()
-   *   if (!res.ok) throw new Error(data.message)
-   *   saveSession(data.user); setUser(data.user)
-   */
   const login = useCallback(async (username, password) => {
     setLoading(true)
     setError(null)
 
     try {
-      // Simulation délai réseau
-      await new Promise((r) => setTimeout(r, 800))
-
-      // Vérification démo
-      const found = DEMO_USERS.find(
-        (u) =>
-          u.username.toLowerCase() === username.toLowerCase().trim() &&
-          u.password === password
-      )
-
-      if (!found) {
-        throw new Error('Identifiant ou mot de passe incorrect.')
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur de connexion')
       }
 
-      // On ne stocke jamais le mot de passe côté client
-      const { password: _pw, ...safeUser } = found
-      saveSession(safeUser)
-      setUser(safeUser)
-      return safeUser
+      saveSession(data.user)
+      setUser(data.user)
+      return data.user
     } catch (err) {
       setError(err.message)
       throw err
@@ -103,7 +92,12 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    } catch (e) {
+      console.error("Erreur lors de la déconnexion backend", e)
+    }
     saveSession(null)
     setUser(null)
     setError(null)
@@ -120,7 +114,7 @@ export function AuthProvider({ children }) {
       login,
       logout,
       clearError,
-      demoUsers: DEMO_USERS.map(({ password: _pw, ...u }) => u),
+      demoUsers: [], // Vider car on utilise la DB réelle
     }}>
       {children}
     </AuthContext.Provider>

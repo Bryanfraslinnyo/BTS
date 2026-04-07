@@ -100,6 +100,13 @@ class Examen(TimestampMixin, db.Model):
         comment="Résultats textuels de l'examen",
     )
 
+    vu_par_medecin = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        comment="Indique si le médecin prescripteur a vu le résultat",
+    )
+
     # ── Index composites ─────────────────────────────
     __table_args__ = (
         db.Index("ix_examen_patient_date",  "patient_id", "date"),

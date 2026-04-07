@@ -37,18 +37,19 @@ def create_app(env: str = None) -> Flask:
     from .routes.examens      import bp as examens_bp
     from .routes.stats        import bp as stats_bp
     from .routes.rapports     import bp as rapports_bp
+    from .routes.auth         import bp as auth_bp
     
-
     app.register_blueprint(medecins_bp,      url_prefix="/api/medecins")
     app.register_blueprint(patients_bp,      url_prefix="/api/patients")
     app.register_blueprint(consultations_bp, url_prefix="/api/consultations")
     app.register_blueprint(examens_bp,       url_prefix="/api/examens")
     app.register_blueprint(stats_bp,         url_prefix="/api/stats")
-    app.register_blueprint(rapports_bp, url_prefix='/api/rapports')  # ← AJOUTER CETTE LIGNE
+    app.register_blueprint(rapports_bp,      url_prefix='/api/rapports')
+    app.register_blueprint(auth_bp,          url_prefix="/api/auth")
         
         # Pour debug - afficher toutes les routes
     print("\n" + "="*60)
-    print("📍 ROUTES API ENREGISTRÉES :")
+    print("ROUTES API ENREGISTREES :")
     print("="*60)
     for rule in app.url_map.iter_rules():
         if '/api/' in rule.rule:

@@ -115,7 +115,7 @@ class ConsultationListSchema(Schema):
     statut     = fields.String(dump_only=True)
     diagnostic = fields.String(dump_only=True, allow_none=True)
     
-    # 🩺 CONSTANTES VITALES - AJOUTÉES POUR L'AFFICHAGE
+    #  CONSTANTES VITALES - AJOUTÉES POUR L'AFFICHAGE
     poids       = fields.Float(dump_only=True, allow_none=True)
     taille      = fields.Float(dump_only=True, allow_none=True)
     temperature = fields.Float(dump_only=True, allow_none=True)

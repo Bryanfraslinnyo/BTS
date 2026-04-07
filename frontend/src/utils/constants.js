@@ -112,6 +112,7 @@ export const NAV_GROUPS = [
     label: 'Médical',
     items: [
       { id: 'examens', label: 'Examens',       icon: '🔬' },
+      { id: 'laborantin', label: 'Laboratoire',   icon: '🧪' },
       { id: 'stats',   label: 'Statistiques',  icon: '📊' },
       { id: 'medecins', label: 'Médecins',     icon: '👨‍⚕️' },
     ],

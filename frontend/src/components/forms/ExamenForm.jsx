@@ -5,6 +5,7 @@ import { TYPES_EXAMEN, STATUTS_EXAMEN, MEDECINS } from '../../utils/constants.js
 import { today, formatDate, calcAge } from '../../utils/helpers.js'
 import MedecinSelect from './MedecinSelect.jsx'
 import { useApp } from '../../context/Appcontext.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 const defaultForm = {
   patient_id: '', consultation_id: '', date: today(),
@@ -15,6 +16,7 @@ const defaultForm = {
 export default function ExamenForm({ initial = {}, patients, consultations, preselectedPatient, onSubmit, onClose }) {
   const [form, setForm] = useState({ ...defaultForm, ...initial })
   const { medecins } = useApp()
+  const { user } = useAuth()
   const [selPatient, setSelP] = useState(
     preselectedPatient ||
     (initial.patient_id ? patients.find((p) => p.id === initial.patient_id) : null)
@@ -108,17 +110,19 @@ export default function ExamenForm({ initial = {}, patients, consultations, pres
           {errors.nom && <div className="form-error">{errors.nom}</div>}
         </div>
 
-        <div className="form-group">
-          <label className="form-label">Médecin prescripteur</label>
-          <MedecinSelect 
-                              value={form.medecin_ref_id}
-                              onChange={(m) => {
-                                setSelectedMedecin(m)
-                                set('medecin_id', m?.id || null)
-                              }}
-                              disabled={false}
-                            />
-        </div>
+        {user?.role === 'admin' && (
+          <div className="form-group">
+            <label className="form-label">Médecin prescripteur</label>
+            <MedecinSelect 
+              value={form.medecin_id}
+              onChange={(m) => {
+                setSelectedMedecin(m)
+                set('medecin_id', m?.id || null)
+              }}
+              disabled={false}
+            />
+          </div>
+        )}
 
         <div className="form-group mb-0">
           <label className="form-label">Résultats</label>

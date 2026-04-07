@@ -17,10 +17,10 @@ def run_seed(app):
     with app.app_context():
         # Évite les doublons
         if Medecin.query.count() > 0:
-            print("✓ Base déjà peuplée, seed ignoré.")
+            print("Base deja peuplee, seed ignore.")
             return
 
-        print("🌱 Peuplement de la base de données...")
+        print(" Peuplement de la base de données...")
 
         # ── Médecins ─────────────────────────────────────
         medecins = [
@@ -235,10 +235,10 @@ def run_seed(app):
         db.session.add_all(examens)
         db.session.commit()
 
-        print(f"  ✓ {len(medecins)} médecins")
-        print(f"  ✓ {len(patients)} patients")
-        print(f"  ✓ {len(consultations)} consultations")
-        print(f"  ✓ {len(examens)} examens")
+        print(f"  - {len(medecins)} medecins")
+        print(f"  - {len(patients)} patients")
+        print(f"  - {len(consultations)} consultations")
+        print(f"  - {len(examens)} examens")
 
         # ── Utilisateurs ──────────────────────────────────
         from app.models.user import User
@@ -253,6 +253,9 @@ def run_seed(app):
             dict(username="keita.boubacar",password="iug2024",  nom="Keita Boubacar",
                  role="medecin",    role_label="Médecin · Pneumologie",
                  photo_color="#2E7D32", medecin_id=medecins[2].id),
+            dict(username="labo.test",     password="labo123",  nom="Labo Tech",
+                 role="laborantin", role_label="Technicien de Laboratoire",
+                 photo_color="#00695C", medecin_id=None),
             dict(username="admin",         password="admin123", nom="Administrateur",
                  role="admin",      role_label="Administrateur système",
                  photo_color="#F57C00", medecin_id=None),
@@ -267,5 +270,5 @@ def run_seed(app):
             db.session.add(u)
 
         db.session.commit()
-        print(f"  ✓ {len(users_data)} utilisateurs")
-        print("🎉 Seed terminé avec succès !")
+        print(f"  - {len(users_data)} utilisateurs")
+        print(" Seed termine avec succes !")

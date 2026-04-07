@@ -1,7 +1,9 @@
+import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../../context/Appcontext.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { DETAIL_PAGES } from '../../utils/constants.js'
 import { getInitials } from '../../utils/helpers.js'
+import NotificationManager from '../ui/NotificationManager.jsx'
 
 const PAGE_META = {
   dashboard:            { title: 'Tableau de bord',       sub: null },
@@ -10,12 +12,50 @@ const PAGE_META = {
   consultations:        { title: 'Consultations',          sub: 'Gestion des consultations médicales' },
   'consultation-detail':{ title: null,                    sub: 'Détail de la consultation' },
   examens:              { title: 'Examens médicaux',       sub: 'Prescriptions & résultats' },
+  laborantin:           { title: 'Laboratoire',            sub: 'Gestion et saisie des résultats' },
   stats:                { title: 'Statistiques',           sub: 'Analyses et rapports' },
 }
 
 export default function Topbar() {
-  const { activePage, pageParams, navigate, patients, stats } = useApp()
   const { user, logout } = useAuth()
+  const { activePage, pageParams, navigate, patients, stats, consultations, examens } = useApp()
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifCount, setNotifCount] = useState(0)
+
+  // Calculate notification count
+  const calcNotifCount = useCallback(() => {
+    if (!user) return 0
+    let count = 0
+
+    if (user.role === 'medecin') {
+      // Upcoming consultations (within 30 min)
+      const now = new Date()
+      count += consultations.filter(c => {
+        if (c.statut !== 'Planifiée') return false
+        const startTime = new Date(`${c.date}T${c.heure || '00:00'}`)
+        const diffMins = (startTime - now) / 60000
+        return diffMins > -10 && diffMins <= 30
+      }).length
+
+      // Unseen exam results
+      count += examens.filter(e =>
+        (e.statut === 'Terminé' || e.statut === 'Résultat disponible') &&
+        !e.vu_par_medecin
+      ).length
+    }
+
+    if (user.role === 'laborantin') {
+      count += examens.filter(e => e.statut === 'En attente').length
+    }
+
+    return count
+  }, [user, consultations, examens])
+
+  useEffect(() => {
+    setNotifCount(calcNotifCount())
+    const interval = setInterval(() => setNotifCount(calcNotifCount()), 10000)
+    return () => clearInterval(interval)
+  }, [calcNotifCount])
 
   const meta    = PAGE_META[activePage] || { title: activePage, sub: null }
   const isDetail = activePage in DETAIL_PAGES
@@ -32,7 +72,7 @@ export default function Topbar() {
 
   // Greeting sub for dashboard
   const sub = activePage === 'dashboard'
-    ? `Bonjour, Dr. Bah · ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
+    ? `Bonjour, ${user?.nom || 'Utilisateur'} · ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
     : meta.sub
 
   return (
@@ -52,47 +92,45 @@ export default function Topbar() {
 
       {/* Actions */}
       <div className="topbar-actions">
-        <div className="topbar-icon-btn" title="Notifications">
+        {/* Bell — notification trigger */}
+        <div
+          className={`topbar-icon-btn notif-bell ${notifOpen ? 'active' : ''}`}
+          title="Notifications"
+          onClick={() => setNotifOpen(v => !v)}
+          style={{ position: 'relative', cursor: 'pointer' }}
+        >
           🔔
-          {stats.plannedConsults > 0 && <div className="notif-dot" />}
+          {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
         </div>
 
-        {/* Utilisateur connecté */}
-        {user && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 4 }}>
-            <div
-              style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: (user.photo_color || '#1565C0') + '22',
-                color: user.photo_color || '#1565C0',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, fontSize: 12, flexShrink: 0,
-              }}
-            >
-              {getInitials(user.nom)}
-            </div>
-            <div style={{ lineHeight: 1.3 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
-                {user.nom.includes('Dr.') ? user.nom : `Dr. ${user.nom}`}
-              </div>
-              <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{user.role_label}</div>
-            </div>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={logout}
-              title="Se déconnecter"
-              style={{ marginLeft: 4 }}
-            >
-              ⎋ Déconnexion
-            </button>
-          </div>
+        {/* Notification panel */}
+        <NotificationManager isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
+
+        {/* New consultation button */}
+        {user?.role !== 'laborantin' && (
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => navigate('consultations', { openNew: true })}
+          >
+            + Consultation
+          </button>
         )}
 
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() => navigate('consultations', { openNew: true })}
-        >
-          + Consultation
+        {/* Profile info */}
+        <div className="topbar-user-info">
+          <div className="profile-avatar" style={{ backgroundColor: user?.photo_color }}>
+            {getInitials(user?.nom || 'U')}
+          </div>
+          <div className="topbar-user-text">
+            <span className="profile-name">{user?.nom || 'Utilisateur'}</span>
+            <span className="profile-role">{user?.role_label || user?.role}</span>
+          </div>
+        </div>
+
+        {/* Styled logout button */}
+        <button className="topbar-logout-btn" onClick={logout} title="Se déconnecter">
+          <span className="logout-icon">⎋</span>
+          <span className="logout-label">Déconnexion</span>
         </button>
       </div>
     </header>

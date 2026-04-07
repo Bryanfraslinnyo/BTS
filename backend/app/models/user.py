@@ -23,7 +23,7 @@ from .base import TimestampMixin
 
 
 ROLE_ENUM = db.Enum(
-    "admin", "medecin", "secretaire", "infirmier",
+    "admin", "medecin", "secretaire", "infirmier", "laborantin",
     name="user_role_enum",
 )
 

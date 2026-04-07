@@ -13,6 +13,14 @@ const DEMO_ACCOUNTS = [
     initials: 'BI',
   },
   {
+    username: 'labo.test',
+    password: 'labo123',
+    nom: 'Labo Tech',
+    role: 'Technicien de Laboratoire',
+    color: '#00695C',
+    initials: 'LT',
+  },
+  {
     username: 'admin',
     password: 'admin123',
     nom: 'Administrateur',

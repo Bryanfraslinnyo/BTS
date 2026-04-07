@@ -1,4 +1,5 @@
-﻿import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { useErrorToast, ErrorToastContainer } from '../components/ui/ErrorToast.jsx'
 
 const AppContext = createContext(null)
 const API_URL = '/api'
@@ -6,6 +7,7 @@ const API_URL = '/api'
 async function apiFetch(endpoint, options = {}) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...options.headers },
   })
   if (!response.ok) {
@@ -23,6 +25,7 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [activePage, setActivePage] = useState('dashboard')
   const [pageParams, setPageParams] = useState({})
+  const { errors, showError, dismissError } = useErrorToast()
 
   // Fonction d'extraction des données
   const extractData = useCallback((response) => {
@@ -103,69 +106,110 @@ export function AppProvider({ children }) {
   }, [medecins])
 
   const addPatient = useCallback(async (data) => {
-    const result = await apiFetch('/patients/', { method: 'POST', body: JSON.stringify(data) })
-    setPatients((prev) => [...prev, result])
-    return result
-  }, [])
+    try {
+      const result = await apiFetch('/patients/', { method: 'POST', body: JSON.stringify(data) })
+      setPatients((prev) => [...prev, result])
+      return result
+    } catch (err) {
+      showError(err.message, 'Impossible de creer le patient')
+      throw err
+    }
+  }, [showError])
 
   const updatePatient = useCallback(async (id, data) => {
-    const result = await apiFetch(`/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-    setPatients((prev) => prev.map((p) => (p.id === id ? result : p)))
-    return result
-  }, [])
+    try {
+      const result = await apiFetch(`/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+      setPatients((prev) => prev.map((p) => (p.id === id ? result : p)))
+      return result
+    } catch (err) {
+      showError(err.message, 'Impossible de modifier le patient')
+      throw err
+    }
+  }, [showError])
 
   const deletePatient = useCallback(async (id) => {
-    await apiFetch(`/patients/${id}`, { method: 'DELETE' })
-    setPatients((prev) => prev.filter((p) => p.id !== id))
-    setConsultations((prev) => prev.filter((c) => c.patient_id !== id))
-    setExamens((prev) => prev.filter((e) => e.patient_id !== id))
-  }, [])
+    try {
+      await apiFetch(`/patients/${id}`, { method: 'DELETE' })
+      setPatients((prev) => prev.filter((p) => p.id !== id))
+      setConsultations((prev) => prev.filter((c) => c.patient_id !== id))
+      setExamens((prev) => prev.filter((e) => e.patient_id !== id))
+    } catch (err) {
+      showError(err.message, 'Impossible de supprimer le patient')
+      throw err
+    }
+  }, [showError])
 
   const getPatient = useCallback((id) => patients.find((p) => p.id === id), [patients])
 
   const addConsultations = useCallback(async (data) => {
-    console.log('➕ Création consultation avec données:', data)
-    const result = await apiFetch('/consultations/', { 
-      method: 'POST', 
-      body: JSON.stringify(data) 
-    })
-    console.log('➕ Résultat création:', result)
-    await forceReload() // Recharger toutes les données
-    return result
-  }, [forceReload])
+    try {
+      const result = await apiFetch('/consultations/', { 
+        method: 'POST', 
+        body: JSON.stringify(data) 
+      })
+      await forceReload()
+      return result
+    } catch (err) {
+      showError(err.message, 'Impossible de creer la consultation')
+      throw err
+    }
+  }, [forceReload, showError])
 
   const updateConsultation = useCallback(async (id, data) => {
-    console.log('✏️ Mise à jour consultation', id, 'avec données:', data)
-    const result = await apiFetch(`/consultations/${id}`, { 
-      method: 'PUT', 
-      body: JSON.stringify(data) 
-    })
-    console.log('✏️ Résultat mise à jour:', result)
-    await forceReload() // Recharger toutes les données
-    return result
-  }, [forceReload])
+    try {
+      const result = await apiFetch(`/consultations/${id}`, { 
+        method: 'PUT', 
+        body: JSON.stringify(data) 
+      })
+      await forceReload()
+      return result
+    } catch (err) {
+      showError(err.message, 'Impossible de modifier la consultation')
+      throw err
+    }
+  }, [forceReload, showError])
 
   const deleteConsultation = useCallback(async (id) => {
-    await apiFetch(`/consultations/${id}`, { method: 'DELETE' })
-    await forceReload() // Recharger toutes les données
-  }, [forceReload])
+    try {
+      await apiFetch(`/consultations/${id}`, { method: 'DELETE' })
+      await forceReload()
+    } catch (err) {
+      showError(err.message, 'Impossible de supprimer la consultation')
+      throw err
+    }
+  }, [forceReload, showError])
 
   const addExamen = useCallback(async (data) => {
-    const result = await apiFetch('/examens/', { method: 'POST', body: JSON.stringify(data) })
-    setExamens((prev) => [...prev, result])
-    return result
-  }, [])
+    try {
+      const result = await apiFetch('/examens/', { method: 'POST', body: JSON.stringify(data) })
+      setExamens((prev) => [...prev, result])
+      return result
+    } catch (err) {
+      showError(err.message, 'Impossible de creer l\'examen')
+      throw err
+    }
+  }, [showError])
 
   const updateExamen = useCallback(async (id, data) => {
-    const result = await apiFetch(`/examens/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-    setExamens((prev) => prev.map((e) => (e.id === id ? result : e)))
-    return result
-  }, [])
+    try {
+      const result = await apiFetch(`/examens/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+      setExamens((prev) => prev.map((e) => (e.id === id ? result : e)))
+      return result
+    } catch (err) {
+      showError(err.message, 'Impossible de modifier l\'examen')
+      throw err
+    }
+  }, [showError])
 
   const deleteExamen = useCallback(async (id) => {
-    await apiFetch(`/examens/${id}`, { method: 'DELETE' })
-    setExamens((prev) => prev.filter((e) => e.id !== id))
-  }, [])
+    try {
+      await apiFetch(`/examens/${id}`, { method: 'DELETE' })
+      setExamens((prev) => prev.filter((e) => e.id !== id))
+    } catch (err) {
+      showError(err.message, 'Impossible de supprimer l\'examen')
+      throw err
+    }
+  }, [showError])
 
   const addMedecin = useCallback(async (data) => {
     const result = await apiFetch('/medecins/', { method: 'POST', body: JSON.stringify(data) })
@@ -260,6 +304,7 @@ export function AppProvider({ children }) {
       }}
     >
       {children}
+      <ErrorToastContainer errors={errors} onDismiss={dismissError} />
     </AppContext.Provider>
   )
 }

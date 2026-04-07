@@ -13,6 +13,7 @@ import ConsultationDetailPage from './pages/ConsultationDetailPage.jsx'
 import ExamensPage            from './pages/ExamensPage.jsx'
 import StatsPage              from './pages/StatsPage.jsx'
 import MedecinsManager from './pages/MedecinsManager.jsx'
+import LaborantinPage from './pages/LaborantinPage.jsx'
 
 function Router() {
   const { activePage } = useApp()
@@ -26,6 +27,7 @@ function Router() {
     examens:               <ExamensPage />,
     stats:                 <StatsPage />,
     medecins:              <MedecinsManager />,
+    laborantin:            <LaborantinPage />,
   }
 
   return routes[activePage] || <DashboardPage />

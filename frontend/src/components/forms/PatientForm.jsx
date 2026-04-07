@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Avatar from '../ui/Avatar.jsx'
 import { BLOOD_GROUPS, SEXES, AVATAR_COLORS } from '../../utils/constants.js'
 import { useApp } from '../../context/Appcontext.jsx' 
+import { useAuth } from '../../context/AuthContext.jsx'
 import MedecinSelect from './MedecinSelect.jsx'
 
 const defaultForm = {
@@ -23,6 +24,7 @@ const defaultForm = {
 
 export default function PatientForm({ initial = {}, onSubmit, onClose }) {
   const { medecins } = useApp()
+  const { user } = useAuth()
   const [form, setForm] = useState({ ...defaultForm, ...initial })
   const [errors, setErrors] = useState({})
   const [selectedMedecin, setSelectedMedecin] = useState(null)
@@ -41,6 +43,12 @@ export default function PatientForm({ initial = {}, onSubmit, onClose }) {
     const e = {}
     if (!form.prenom?.trim()) e.prenom = 'Prénom requis'
     if (!form.nom?.trim()) e.nom = 'Nom requis'
+    
+    if (form.dob) {
+      const d = new Date(form.dob)
+      if (d > new Date()) e.dob = 'La date de naissance ne peut pas être dans le futur'
+    }
+
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -116,6 +124,7 @@ export default function PatientForm({ initial = {}, onSubmit, onClose }) {
               value={form.dob || ''} 
               onChange={(e) => set('dob', e.target.value)} 
             />
+            {errors.dob && <div className="form-error">{errors.dob}</div>}
           </div>
           <div className="form-group mb-0">
             <label className="form-label">Sexe</label>
@@ -175,14 +184,18 @@ export default function PatientForm({ initial = {}, onSubmit, onClose }) {
           </div>
           <div className="form-group">
             <label className="form-label">Médecin référent</label>
-            <MedecinSelect 
-              value={form.medecin_ref_id}
-              onChange={(m) => {
-                setSelectedMedecin(m)
-                set('medecin_ref_id', m?.id || null)
-              }}
-              disabled={false}
-            />
+            {user?.role === 'admin' ? (
+              <MedecinSelect 
+                value={form.medecin_ref_id}
+                onChange={(m) => {
+                  setSelectedMedecin(m)
+                  set('medecin_ref_id', m?.id || null)
+                }}
+                disabled={false}
+              />
+            ) : (
+              <input className="form-control" value={user?.nom} disabled />
+            )}
           </div>
         </div>
         <div className="form-group">

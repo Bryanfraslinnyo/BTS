@@ -111,7 +111,7 @@ class Consultation(TimestampMixin, db.Model):
     taille      = db.Column(db.Numeric(5, 1), nullable=True, comment="cm")
     temperature = db.Column(db.Numeric(4, 1), nullable=True, comment="°C")
     pouls       = db.Column(db.SmallInteger,  nullable=True, comment="bpm")
-    saturation  = db.Column(db.Numeric(4, 1), nullable=True, comment="% SpO₂")
+    saturation  = db.Column(db.Numeric(4, 1), nullable=True, comment="% SpO2")
     tension     = db.Column(db.String(20),    nullable=True, comment="ex. 130/80 mmHg")
 
     notes_cliniques = db.Column(

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Avatar from '../ui/Avatar.jsx'
 import Tabs from '../ui/Tabs.jsx'
 import { useApp } from '../../context/Appcontext.jsx' 
+import { useAuth } from '../../context/AuthContext.jsx'
 import PatientSearchInput from './PatientSearchInput.jsx'
 import { TYPES_CONSULTATION, SPECIALITES, MEDECINS, STATUTS_CONSULTATION } from '../../utils/constants.js'
 import { today, calcAge } from '../../utils/helpers.js'
@@ -23,7 +24,8 @@ const defaultForm = {
 
 export default function ConsultationForm({ initial = {}, patients, onSubmit, onClose, preselectedPatient }) {
   const [form, setForm]       = useState({ ...defaultForm, ...initial })
-    const { medecins } = useApp()
+  const { medecins } = useApp()
+  const { user } = useAuth()
   const [selPatient, setSelP] = useState(
     preselectedPatient ||
     (initial.patient_id ? patients.find((p) => p.id === initial.patient_id) : null)
@@ -46,6 +48,13 @@ export default function ConsultationForm({ initial = {}, patients, onSubmit, onC
     if (!selPatient && !form.patient_id) e.patient = 'Patient requis'
     if (!form.motif.trim()) e.motif = 'Motif requis'
     if (!form.date) e.date = 'Date requise'
+    
+    // Frontend Date Validation
+    const d = new Date(form.date)
+    const todayDate = new Date()
+    todayDate.setHours(0,0,0,0)
+    if (d < todayDate) e.date = 'La date ne peut pas être passée'
+    
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -127,17 +136,24 @@ const handleSubmit = () => {
             </div>
 
             <div className="form-grid-2 mt-4">
-              <div className="form-group mb-0">
-                <label className="form-label">Médecin</label>
-                <MedecinSelect 
-                              value={form.medecin_ref_id}
-                              onChange={(m) => {
-                                setSelectedMedecin(m)
-                                set('medecin_id', m?.id || null)
-                              }}
-                              disabled={false}
-                            />
-              </div>
+              {user?.role === 'admin' ? (
+                <div className="form-group mb-0">
+                  <label className="form-label">Médecin</label>
+                  <MedecinSelect 
+                    value={form.medecin_id}
+                    onChange={(m) => {
+                      setSelectedMedecin(m)
+                      set('medecin_id', m?.id || null)
+                    }}
+                    disabled={false}
+                  />
+                </div>
+              ) : (
+                <div className="form-group mb-0">
+                   <label className="form-label">Médecin</label>
+                   <input className="form-control" value={user?.nom} disabled />
+                </div>
+              )}
               <div className="form-group mb-0">
                 <label className="form-label">Statut</label>
                 <select className="form-control" value={form.statut} onChange={(e) => set('statut', e.target.value)}>

@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from sqlalchemy import or_, func
 from app.extensions import db
 from app.models import Patient
+from app.utils.auth import get_current_user, get_current_user_or_none, apply_doctor_filter
 from app.schemas.patient import (
     patient_schema, patients_schema, patient_detail_schema
 )
@@ -32,6 +33,7 @@ def list_patients():
     per_page= int(request.args.get("per_page", 50))
 
     query = Patient.query
+    query = apply_doctor_filter(query, Patient)
 
     if q:
         like = f"%{q}%"
@@ -61,6 +63,9 @@ def list_patients():
 def get_patient(id):
     """GET /api/patients/<id> — dossier complet (PatientDetailPage)."""
     p = db.get_or_404(Patient, id)
+    user = get_current_user_or_none()
+    if user and user.role == 'medecin' and p.medecin_ref_id != user.medecin_id:
+        abort(403, description="Acces refuse a ce patient.")
     return jsonify(patient_detail_schema.dump(p))
 
 from marshmallow import ValidationError
@@ -69,9 +74,15 @@ from marshmallow import ValidationError
 def create_patient():
     try:
         data = request.get_json()
+        
+        # Auto-assignation du medecin connecte
+        user = get_current_user_or_none()
+        if user and user.role == 'medecin' and user.medecin_id:
+            data['medecin_ref_id'] = user.medecin_id
+        
         loaded = patient_schema.load(data)
     except ValidationError as err:
-        return jsonify(err.messages), 400
+        return jsonify({"message": "Donnees invalides", "errors": err.messages}), 400
 
     p = Patient()
     for key, value in loaded.items():
@@ -91,7 +102,7 @@ def update_patient(id):
     p = db.get_or_404(Patient, id)
     data = request.get_json()
     
-    # 🔑 FILTRER les champs en lecture seule (id, nom_complet, nb_consultations, etc.)
+    #  FILTRER les champs en lecture seule (id, nom_complet, nb_consultations, etc.)
     filtered_data = {k: v for k, v in data.items() if k in MODIFIABLE_FIELDS}
     
     # Charger avec l'instance existante pour mise à jour
